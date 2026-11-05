@@ -1,7 +1,0 @@
-*, *::before, *::after { box-sizing: border-box; }
-body { margin: 0; background: var(--surface-page); color: var(--text-body); font-family: var(--font-sans); font-size: 16px; -webkit-font-smoothing: antialiased; }
-a { color: var(--text-link); text-decoration: none; }
-a:hover { color: var(--action-primary-hover); text-decoration: underline; text-underline-offset: 3px; }
-button { font-family: inherit; }
-:focus-visible { outline: 2px solid var(--action-primary); outline-offset: 3px; }
-.rk-dark { background-color: var(--surface-page); color: var(--text-body); }
