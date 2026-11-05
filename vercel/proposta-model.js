@@ -5,12 +5,12 @@
     principal: 'rankmyapp',
     idioma: 'pt',
     planoGeo: 'rank',
-    produtos: { rankmyapp: true, rankmyads: false, rankmygeo: false, intel: false },
+    produtos: { rankmyapp: true, rankmyads: true, rankmygeo: true, intel: false },
     modulos: { rankmyads: ['data'], intel: [] },
     dores: { rankmyapp: ['descoberta', 'conversao', 'mercado', 'reviews'], rankmyads: [], rankmygeo: [], intel: [] },
     prospect: 'Rodobens',
     data: 'Outubro 2026',
-    subtitulo: 'Uma solução desenhada pela Rank para que cada review vire uma jornada de autosserviço resolvida, dentro da própria loja.',
+    subtitulo: 'Pode ser uma solução desenhada pela Rank para alavancar os resultados do seu negócio.',
     preparadoPara: 'Time de CX e Produto {empresa}',
     escopo: 'App Store e Google Play',
     rep: { nome: 'Karoline Rodrigues', cargo: 'Representante comercial · Rank', email: 'karoline.rodrigues@rankmyapp.com.br', telefone: '(11) 97324-8995', foto: 'assets/web/img119.webp' },
@@ -209,7 +209,7 @@
     const itens = inc.map(i => {
       const pr = Math.max(0, +i.preco || 0), d = Math.min(100, Math.max(0, +i.desconto || 0)), fin = pr * (1 - d / 100);
       cheio += pr; aposItens += fin;
-      return { nome: T(i.nome), desc: T(i.desc), precoFmt: brl(fin), precoCheioFmt: brl(pr), temDesconto: d > 0 && pr > 0 };
+      return { pid: i.id.startsWith('p-') ? i.id.slice(2) : 'rankmyapp', nome: T(i.nome), desc: T(i.desc), precoFmt: brl(fin), precoCheioFmt: brl(pr), temDesconto: d > 0 && pr > 0 };
     });
     const dg = p.descontoGeral || {}, dv = Math.max(0, +dg.valor || 0);
     const descGeral = dg.tipo === 'valor' ? Math.min(dv, aposItens) : aposItens * Math.min(100, dv) / 100;
@@ -255,7 +255,7 @@
       taxonomia: T(c.taxonomia), reviewMes: (rv.mes || '').toUpperCase(), reviewTexto: T(rv.texto), reviewCategoria: T(rv.categoria), reviewResposta: T(rv.resposta),
       passos: (c.passos || []).map(x => ({ titulo: T(x.titulo), texto: T(x.texto), quando: T(x.quando) })),
       conviteAntes: T(cv.antes), conviteDestaque: T(cv.destaque), conviteDepois: T(cv.depois),
-      itens, nFrentes: n,
+      itens, grupos: ordem(c).map(id => ({ nome: (PRODUTOS.find(x => x.id === id) || {}).nome || id, cor: COR[id] || '#12172F', itens: itens.filter(x => x.pid === id) })).filter(g => g.itens.length), nFrentes: n,
       precoTitulo: 'Investimento mensal: uma solução, ' + (WORDS[n] || n) + (n === 1 ? ' frente' : ' frentes'),
       temDescontoGeral: descGeral > 0,
       descontoGeralFmt: '− ' + brl(descGeral),

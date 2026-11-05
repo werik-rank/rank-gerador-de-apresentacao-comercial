@@ -24,6 +24,7 @@
               "components/navigation/**",
               "components/overlays/**",
               "components/surfaces/**",
+              "doc-page.js",
               "ui_kits/platform/**"
             ],
             "message": "Import design-system components from 'index.js', not component internals."

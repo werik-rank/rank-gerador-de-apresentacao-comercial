@@ -375,7 +375,7 @@
     ['30 dias', '30 days', '30 días'],
     ['Condição Black Friday', 'Black Friday offer', 'Condición Black Friday'],
     ['Isenção de Setup', 'Setup fee waived', 'Exención de Setup'],
-    ['Uma solução desenhada pela Rank para que cada review vire uma jornada de autosserviço resolvida, dentro da própria loja.', 'A solution designed by Rank so that every review becomes a resolved self-service journey, inside the store itself.', 'Una solución diseñada por Rank para que cada review se convierta en un recorrido de autoservicio resuelto, dentro de la propia tienda.'],
+    ['Pode ser uma solução desenhada pela Rank para alavancar os resultados do seu negócio.', 'It can be a solution designed by Rank to leverage your business results.', 'Puede ser una solución diseñada por Rank para impulsar los resultados de su negocio.'],
     ['Time de CX e Produto {1}', 'CX and Product team {1}', 'Equipo de CX y Producto {1}'],
     ['App Store e Google Play', 'App Store and Google Play', 'App Store y Google Play'],
     ['Representante comercial · Rank', 'Sales representative · Rank', 'Representante comercial · Rank'],

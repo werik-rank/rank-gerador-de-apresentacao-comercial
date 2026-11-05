@@ -5,7 +5,7 @@ Rank (formerly RankMyApp) is a Brazilian **marketing intelligence platform + spe
 Products under the umbrella ("A Rank, O RankMyApp / O RankMyAds / O RankMyGEO"):
 - **RankMyApp** — mobile intelligence + ASO (product color Teal Mint)
 - **RankMyAds** — performance media (Forest Emerald)
-- **RankMyGeo** — GEO / AI-search visibility (Espresso)
+- **RankMyGEO** — GEO / AI-search visibility (Espresso)
 - **Rank Intelligence** — MI, RI and tools (Dark Slate)
 
 ## Sources
@@ -15,7 +15,7 @@ Products under the umbrella ("A Rank, O RankMyApp / O RankMyAds / O RankMyGEO"):
 
 ## Index
 - `styles.css` — entry point (imports only) → `tokens/` (fonts, colors, typography, spacing, motion, effects, base) + `components/components.css`
-- `guidelines/` — foundation specimen cards (Colors, Type, Spacing, Brand)
+- `guidelines/` — foundation specimen cards (Colors, Type, Spacing, Brand, Social)
 - `components/` — React primitives (see list below), one `@dsCard` per folder
 - `ui_kits/platform/` — Rank platform recreation: Home hero → agent Workspace
 - `slides/institucional/` — 9 layouts from the rebranding deck, one shared rule set (`institucional.css`) · `slides/comercial/` — 5 commercial-proposal layouts (`comercial.css`)
@@ -70,6 +70,19 @@ Not ported from Orbit: MotionLab / GlowFeedback / MaterialLab (catalog demos), A
 ### Two dark registers
 - **Brand / internal (Central de Marketing):** flat night UI — `--night-bg #121212`, surfaces `#151515/#181818`, 1px `#2B2B2B` borders, text `#F0F4F8 / #C9CED6 / #A3A9B3 / #6E7682`. Section openers "01 · Portfólio" (13px, +0.12em, uppercase, subtle gray) over ExtraLight (200) 64px headlines. Mono numerals (01, 02…) for lists. Product cards: square corners, 3px top rule in the product color.
 - **Commercial proposals:** bold (700) 96px headlines with the lead phrase in Vibrant Cyan, 24px eyebrows tracked +0.4em in cyan, big Light 96px numbers, translucent white cards radius 28px, the symbol cropped large in the background, product mockups on the right.
+
+## Social covers (LinkedIn)
+- **Brand page 1128×191:** centered Rank wordmark (white SVG) + 1px hairline divider + two-line tagline, Light 25px with the lead word Bold. Grounds: gradient-blue-orange, ribbed-blue, ribbed-purple-amber (with symbol), or Teal Mint with cyan glow. Always add grain.
+- **Personal 1584×396:** content sits in the right 60% (the avatar covers the lower left). Eyebrow in cyan caps, Light/ExtraLight headline 52–64px with one Teal Mint-emphasized phrase, "Nome · Cargo" line, small Rank logo or symbol bottom/top right. Grounds: ribbed-teal, gradient-deep-purple with symbol watermark, eye-cyan-dark, ribbed-silhouette-sunset.
+- Ribbed overlay only on real photos; text never below 22px at full size. Specimens: `guidelines/social-linkedin-*.html`; working source: `LinkedIn Covers.html`.
+## Mídia paga
+- 4 canais × 4 produtos (RankMyApp, RankMyAds, RankMyGEO, Rank Intelligence) × 3 abordagens: job to be done, institucional (mensagem "Inteligência de marketing que gera resultado.") e persona. Todas com CTA "Fale com um consultor" (pílula branca, seta).
+- Formatos: LinkedIn 1080×1080 (1:1), Instagram feed 1080×1350, Instagram stories 1080×1920 (texto fora de 250 px topo / 340 px base), Google display 1200×628 (painel na cor do produto + foto). Logo Rank no topo à esquerda, produto com símbolo no topo à direita, texto ancorado embaixo à esquerda. Specimens: `guidelines/paid-*.html`.
+
+- **Wallpapers 1920×1080:** logo top-right (62px high) at x=1552, tagline stacked in 4 lines (34px Light, lead words Bold, tracking +.03em), 120px hairline, then URL 22px. Left 2/3 stays open for the image. Photo, texture (gradient, ribbed) and color (Teal Mint, Ice White) variants — source `Wallpapers.html`.
+- **E-mail signature:** table with inline styles (Arial fallback for email clients): 64px blue symbol (`assets/logo/rank-simbolo-azul.png`), 1px Teal Mint vertical rule, name Bold 20px Teal Mint, role and mobile 15px gray `#8a8a8a`, URL Bold 13px underlined. Editable and copyable in `Mail Signature 1 Rank.html` ("Mail Signature | Rank"). Per-product versions `Mail Signature <n> <Produto>.html` (order: Rank, RankMyApp, RankMyAds, RankMyAds Partners, RankMyGEO, Rank Intelligence) (RankMyApp, RankMyAds, RankMyGEO, Rank Intelligence) add "| Produto" after the role in the product color. Partners version `Mail Signature 4 RankMyAds Partners.html`: adds "| RankMyAds" in Forest Emerald after the role and the Google Partner + Google Marketing Platform Certified badges on the right. The image must be hosted at a public URL for email clients.
+- **Video-call backgrounds (Google Meet) 1920×1080:** only the Rank logo (72px high, 96px margin), top-left or top-right; center stays clear for the speaker. Families: textures, photos, office scenes (logo applied as backlit sign, wood panel, painted wall, ribbed glass) and suggestions. Source `Meet Backgrounds.html`.
+- **Avatars 400×400:** Rank symbol centered, glyph = 50% of the canvas (100px margin). Backgrounds: Teal Mint, Ice White `#F0F4F8`, Black `#121212`, Graphite `#2B2B2B`, white, or transparent (blue, black, white symbol). Files in `assets/avatars/`.
 
 ## Iconography
 - **Google Material Symbols — Outlined**, variable font from Google Fonts (imported first in `styles.css`). Default axes: weight **300**, FILL 0, GRAD 0, opsz 24 — a light line that matches Helvetica Neue Light headlines. Use FILL 1 sparingly for selected/active states.
