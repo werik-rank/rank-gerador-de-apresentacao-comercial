@@ -27,8 +27,8 @@
       resposta: 'Leonardo, sentimos muito: sabemos que você precisa do app para acompanhar seu consórcio. Já levamos essa falha ao nosso time técnico. Para entrar agora, atualize o app na loja e use Esqueci minha senha para renovar o acesso.'
     },
     passos: [
-      { titulo: 'Alinhar a proposta', texto: 'Conversa com a Gisele e o time para ajustar escopo e prioridades.', quando: 'Próxima semana' },
-      { titulo: 'Envolver decisores', texto: 'Apresentar a solução a quem aprova o investimento na {empresa}.', quando: 'Data a definir' },
+      { titulo: 'Diagnóstico', texto: 'Análise da situação atual e das prioridades do projeto.', quando: 'Esta semana' },
+      { titulo: 'Projeto', texto: 'Definição do escopo do projeto.', quando: 'Semana que vem' },
       { titulo: 'Liberar acessos', texto: 'Consoles das lojas, GA4 e MMP para a linha de base.', quando: 'Após aprovação' },
       { titulo: 'Kick off', texto: 'Taxonomia, matriz de respostas e alertas começam a ser construídos.', quando: 'Início do mês 1' }
     ],
@@ -70,7 +70,7 @@
       { id: 'cobertura', nome: 'Cobertura e notoriedade', desc: 'Preciso de alcance além de Google e Meta', produtos: 'CTV, YouTube, Online Video, pDOOH e Display', metricas: 'Alcance, frequência, viewability e VTR' },
       { id: 'consideracao', nome: 'Descoberta e consideração', desc: 'Minha marca não entra na consideração', produtos: 'Native, vídeo, contextual e ChatGPT Ads', metricas: 'Engajamento, visitas qualificadas e CTR' },
       { id: 'aquisicao', nome: 'Intenção e aquisição', desc: 'Não consigo escalar mantendo eficiência', produtos: 'Apple Ads, Ad Network e retargeting', metricas: 'Instalações, CPI, CPA, CAC e ROAS' },
-      { id: 'visita', nome: 'Visita física', desc: 'Preciso levar pessoas às lojas', produtos: 'GEO, pDOOH, Display geolocalizado e mensuração de visita', metricas: 'Visitas, custo por visita e uplift' },
+      { id: 'visita', nome: 'Visita física', desc: 'Preciso levar pessoas às lojas', produtos: 'Geolocalização, pDOOH, Display geolocalizado e mensuração de visita', metricas: 'Visitas, custo por visita e uplift' },
       { id: 'reeng', nome: 'Reengajamento', desc: 'Usuários atuais não ativam ou não compram', produtos: 'Ad Network, Push, retargeting e dados próprios', metricas: 'Ativação, retenção, eventos pós-install e LTV' }
     ] },
     { id: 'rankmygeo', nome: 'RankMyGEO', desc: 'Presença da marca nas respostas de IA', kicker: 'GENERATIVE ENGINE OPTIMIZATION', texto: 'Medimos e ampliamos a presença de {empresa} nas respostas do ChatGPT, Claude, Gemini e Perplexity.', modulos: [], destaques: [
@@ -200,6 +200,7 @@
   const pctFmt = x => (Math.round(x * 10) / 10).toLocaleString('pt-BR') + '%';
   const WORDS = ['nenhuma', 'uma', 'duas', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez'];
 
+  const ADS_JTBD = {"cobertura":{"q":["Para crescer além da sua bolha atual:","conecte-se com novas audiências fora dos canais saturados","e construa lembrança antes da compra."],"d":[["CTV","Vídeo na tela grande, com a atenção de toda a sala"],["YouTube","Escala em vídeo com segmentação por interesse"]],"a":[["Online Video","Inventário premium em portais e streaming"],["pDOOH","Telas digitais na rua, compradas em programática"],["Display","Frequência com custo eficiente"]]},"consideracao":{"q":["Seu público já conhece a categoria, mas ainda não considera você.","Esteja presente na pesquisa e na comparação","para virar primeira opção."],"d":[["Native","Anúncio no formato do conteúdo editorial"],["ChatGPT Ads","Presença nas conversas em que o público pede recomendação"]],"a":[["Vídeo","Narrativa da marca para quem está avaliando"],["Contextual","Anúncio ao lado de conteúdo sobre a categoria"]]},"aquisicao":{"q":["Demanda alta com CPA subindo?","Capture a intenção existente e oriente os algoritmos para o evento de receita,","mantendo a eficiência na escala."],"d":[["Apple Ads","Topo da busca na App Store, com cobrança por toque"],["Ad Network","Compra por CPI ou CPA, com atribuição via MMP"]],"a":[["Retargeting","Retoma quem visitou e não converteu"]]},"visita":{"q":["Conecte a mídia online ao movimento da loja física,","impactando consumidores no raio dos seus PDVs","e comprovando o uplift de visitas."],"d":[["Geolocalização","Segmentação por raio a partir de cada loja"],["Mensuração de visita","Prova de que a mídia levou gente à loja"]],"a":[["pDOOH","Telas digitais perto dos pontos de venda"],["Display geolocalizado","Anúncios para quem circula na região das lojas"]]},"reeng":{"q":["Recupere quem instalou, cadastrou, mas ainda não comprou:","personalize a comunicação pelo comportamento no app ou site","para destravar LTV."],"d":[["Retargeting","Impacta quem já interagiu, a partir dos eventos do app ou do site"],["Dados próprios","Audiências da base do cliente para segmentar e excluir"]],"a":[["Ad Network","Campanhas de reengajamento otimizadas por evento"],["Push","Mensagens diretas para a base que já tem o app"]]}};
   function compute(c) {
     c = fill(c);
     const T = s => String(s == null ? '' : s).split('{empresa}').join(c.prospect || '');
@@ -209,8 +210,10 @@
     const itens = inc.map(i => {
       const pr = Math.max(0, +i.preco || 0), d = Math.min(100, Math.max(0, +i.desconto || 0)), fin = pr * (1 - d / 100);
       cheio += pr; aposItens += fin;
-      return { pid: i.id.startsWith('p-') ? i.id.slice(2) : 'rankmyapp', nome: T(i.nome), desc: T(i.desc), precoFmt: brl(fin), precoCheioFmt: brl(pr), temDesconto: d > 0 && pr > 0 };
+      return { id: i.id, _fin: fin, _cheio: pr, pid: i.id.startsWith('p-') ? i.id.slice(2) : 'rankmyapp', nome: T(i.nome), desc: T(i.desc), precoFmt: brl(fin), precoCheioFmt: brl(pr), temDesconto: d > 0 && pr > 0 };
     });
+    const tirar = ['tool', 'aso'], pm = itens.find(x => x.id === 'mi'); let itensV = itens;
+    if (pm) { const junta = itens.filter(x => x.id === 'mi' || tirar.includes(x.id)); pm._fin = junta.reduce((s, x) => s + x._fin, 0); pm._cheio = junta.reduce((s, x) => s + x._cheio, 0); pm.precoFmt = brl(pm._fin); pm.precoCheioFmt = brl(pm._cheio); pm.temDesconto = false; pm.desc = 'Inclui acesso à ferramenta e serviços de personalização e visibilidade'; itensV = itens.filter(x => !tirar.includes(x.id)); const rv = itensV.find(x => x.id === 'rev'); if (rv) { itensV = itensV.filter(x => x !== rv); itensV.splice(itensV.indexOf(pm) + 1, 0, rv); } }
     const dg = p.descontoGeral || {}, dv = Math.max(0, +dg.valor || 0);
     const descGeral = dg.tipo === 'valor' ? Math.min(dv, aposItens) : aposItens * Math.min(100, dv) / 100;
     const mensal = Math.max(0, aposItens - descGeral), descTotal = cheio - mensal, pct = cheio > 0 ? descTotal / cheio * 100 : 0;
@@ -227,7 +230,7 @@
     });
     const hip = (c.hipoteses || []).filter(h => (h.t || '').trim()).map(h => ({ t: T(h.t), d: T(h.d) }));
     const AF = adsFlags(c), adsCanais = PRODUTOS[1].modulos.filter(m => AF.ma.includes(m.id)).map(m => ({ nome: m.nome }));
-    const AP = appFlags(c), adl = doresSel(c, 'rankmyads'), adsDores = (adl.length ? adl : PRODUTOS[1].dores).map((d, i) => ({ n: String(i + 1).padStart(2, '0'), nome: d.nome, produtos: d.produtos, metricas: d.metricas }));
+    const AP = appFlags(c), adl = doresSel(c, 'rankmyads'), adsDores = (adl.length ? adl : PRODUTOS[1].dores).map((d, i) => { const j = ADS_JTBD[d.id] || { q: ['', '', ''], d: [], a: [] }, n = String(i + 1).padStart(2, '0'); return { n, nome: d.nome, produtos: d.produtos, metricas: d.metricas, metTags: String(d.metricas || '').split(/, | e /).filter(Boolean).map(x => ({ nome: x.charAt(0).toUpperCase() + x.slice(1) })), label: 'RankMyAds Objetivo ' + n + ' ' + d.nome, notas: 'Job to be done do objetivo ' + d.nome + '. Parta da situação do cliente; os produtos em azul têm maior aderência, os demais complementam a estratégia.', q1: j.q[0], q2: j.q[1], q3: j.q[2], destaques: j.d.map(x => ({ nome: x[0], papel: x[1] })), apoio: j.a.map(x => ({ nome: x[0], papel: x[1] })) }; });
     const gp = GEO_PLANOS.find(x => x.id === (c.planoGeo || 'rank')) || GEO_PLANOS[0];
     const geoPlanos = GEO_PLANOS.map(x => ({ nome: x.nome, preco: brl(x.preco), tag: x.id === gp.id ? 'PLANO PROPOSTO' : '', temTag: x.id === gp.id, borda: x.id === gp.id ? '#06B6D4' : 'rgba(205,212,234,0.22)', fundo: x.id === gp.id ? 'rgba(6,182,212,0.12)' : 'rgba(5,20,45,0.55)' }));
     const COR = { rankmyapp: '#0022FF', rankmyads: '#026E52', rankmygeo: '#4A2C18', intel: '#121212' };
@@ -255,7 +258,7 @@
       taxonomia: T(c.taxonomia), reviewMes: (rv.mes || '').toUpperCase(), reviewTexto: T(rv.texto), reviewCategoria: T(rv.categoria), reviewResposta: T(rv.resposta),
       passos: (c.passos || []).map(x => ({ titulo: T(x.titulo), texto: T(x.texto), quando: T(x.quando) })),
       conviteAntes: T(cv.antes), conviteDestaque: T(cv.destaque), conviteDepois: T(cv.depois),
-      itens, grupos: ordem(c).map(id => ({ nome: (PRODUTOS.find(x => x.id === id) || {}).nome || id, cor: COR[id] || '#12172F', itens: itens.filter(x => x.pid === id) })).filter(g => g.itens.length), nFrentes: n,
+      itens: itensV, grupos: ordem(c).map(id => ({ nome: ({ rankmyapp: 'App', rankmyads: 'Ads', rankmygeo: 'GEO' })[id] || (PRODUTOS.find(x => x.id === id) || {}).nome || id, cor: COR[id] || '#12172F', itens: itensV.filter(x => x.pid === id) })).filter(g => g.itens.length), nFrentes: n,
       precoTitulo: 'Investimento mensal: uma solução, ' + (WORDS[n] || n) + (n === 1 ? ' frente' : ' frentes'),
       temDescontoGeral: descGeral > 0,
       descontoGeralFmt: '− ' + brl(descGeral),

@@ -244,7 +244,7 @@ const setP = (o, p, v) => { const k = p.split('.'); let x = o; for (let i = 0; i
 const val = e => { const t = e.target; if (t.type === 'checkbox') return t.checked; if (t.type === 'number') { const n = parseFloat(t.value); return isNaN(n) ? '' : n; } return t.value; };
 
 class Component extends DCLogic {
-  state = { store: null, prodOpen: false, open: null, ajudaOpen: false, slide: 0, editNome: false, listaOpen: false, langOpen: false, pendListaOpen: false };
+  state = { store: null, prodOpen: false, open: null, ajudaOpen: false, slide: 0, editNome: false, listaOpen: false, langOpen: false, pendListaOpen: false, deckSlides: null };
   nomeRef = React.createRef();
   iframeRef = React.createRef();
   componentDidMount() {
@@ -256,7 +256,9 @@ class Component extends DCLogic {
   win() { const f = this.iframeRef.current; return f && f.contentWindow; }
   push(store) { const w = this.win(); if (w) w.postMessage({ type: 'rma-cfg', cfg: this.cur(store) }, '*'); }
   sl() { return RMA.slides(this.state.store ? this.cur() : null); }
-  idx(key) { const i = this.sl().findIndex(x => x.key === key); return i < 0 ? 0 : i; }
+  slideList(c) { const d = this.state.deckSlides; return d && d.length ? d.map(label => ({ key: label, label })) : RMA.slides(c || this.cur()); }
+  idx(key) { const KEYRE = { contracapa: /^Contracapa$/, assinatura: /^Assinatura$/, passos: /^Próximos passos$/, preco: /^Proposta comercial$/, conversao: /Conversão$/, reviews: /Reviews$/ }; const L = this.slideList(); const re = KEYRE[key]; const i = re ? L.findIndex(x => re.test(x.label)) : L.findIndex(x => x.key === key); return i < 0 ? 0 : i; }
+  syncSlides() { const f = this.iframeRef.current; let labels = null; try { labels = [...f.contentDocument.querySelectorAll('deck-stage section[data-label]')].map(x => x.getAttribute('data-label')); } catch (e) {} if (labels && labels.length && (!this.state.deckSlides || this.state.deckSlides.join('|') !== labels.join('|'))) this.setState({ deckSlides: labels }); }
   toggleProd(id, on) {
     if (id === 'intel') return;
     this.update(c => {
@@ -291,7 +293,7 @@ class Component extends DCLogic {
     });
   }
   goto(n) { if (this.state.slide !== n) this.setState({ slide: n }); const w = this.win(); if (w) w.postMessage({ type: 'rma-goto', n }, '*'); }
-  commit(store) { RMA.saveStore(store); this.setState({ store }); this.push(store); }
+  commit(store) { RMA.saveStore(store); this.setState({ store }); this.push(store); setTimeout(() => this.syncSlides(), 600); }
   update(fn) { const store = RMA.clone(this.state.store); fn(this.cur(store)); store.propostas[store.ativa].atualizado = Date.now(); this.commit(store); }
   bind(path) { return e => { const v = val(e); this.update(c => setP(c, path, v)); }; }
   pendencias(c) {
@@ -361,7 +363,7 @@ class Component extends DCLogic {
     this.goto(this.idx(STAGE[k]));
     setTimeout(() => { const el = fld && document.querySelector('[data-pf="' + fld + '"]'); if (el) { el.focus({ preventScroll: false }); } }, 80);
   }
-  onLoad = () => { [300, 900, 1800].forEach(ms => setTimeout(() => { this.push(); this.goto(this.state.slide); }, ms)); };
+  onLoad = () => { [300, 900, 1800].forEach(ms => setTimeout(() => { this.push(); this.goto(this.state.slide); this.syncSlides(); }, ms)); };
 
   renderVals() {
     const st = this.state.store;
@@ -371,7 +373,7 @@ class Component extends DCLogic {
     const E = RMA.EXEMPLO, ex = {};
     for (const k in FIELDS) { f[k] = getP(c, FIELDS[k]); on[k] = this.bind(FIELDS[k]); const v = getP(E, FIELDS[k]); ex[k] = typeof v === 'string' || typeof v === 'number' ? 'Ex.: ' + v : ''; }
         const isOpen = {}, chev = {}, toggle = {}, focus = {};
-    const SL = RMA.slides(c), slideLbl = {}, nn = key => String(Math.max(0, SL.findIndex(x => x.key === key)) + 1).padStart(2, '0');
+    const SL = this.slideList(c), slideLbl = {}, nn = key => String(this.idx(key) + 1).padStart(2, '0');
     for (const k in STAGE) {
       isOpen[k] = this.state.open === k; chev[k] = isOpen[k] ? 'expand_less' : 'expand_more';
       toggle[k] = () => { this.setState({ open: this.state.open === k ? null : k }); this.goto(this.idx(STAGE[k])); };
@@ -502,18 +504,50 @@ class Component extends DCLogic {
         const hexOf = s => { const m = s && s.match(/rgba?\(([^)]+)\)/); if (!m) return null; const p = m[1].split(/[\s,\/]+/).filter(Boolean).map(Number); return { hex: p.slice(0, 3).map(v => Math.round(v).toString(16).padStart(2, '0')).join('').toUpperCase(), a: p.length > 3 ? p[3] : 1 }; };
         const isIcon = el => /Material/i.test(getComputedStyle(el).fontFamily);
         const INLINE = ['SPAN','STRONG','EM','B','I','U','A','SMALL','BR','SUP','SUB','CODE','MARK','LABEL'];
-        const isInline = el => INLINE.includes(el.tagName) && !isIcon(el);
+        const isInline = el => { const cs = getComputedStyle(el); return INLINE.includes(el.tagName) && !isIcon(el) && !['flex', 'inline-flex', 'grid', 'inline-grid', 'block', 'inline-block', 'table', 'list-item'].includes(cs.display) && !((hexOf(cs.backgroundColor) || { a: 0 }).a > 0.01); };
         const hasText = el => [...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim());
         const styleOf = el => { const cs = getComputedStyle(el), w = +cs.fontWeight; return { fontFace: w <= 300 ? 'Helvetica Neue Light' : (w >= 500 && w < 600) ? 'Helvetica Neue Medium' : 'Helvetica Neue', fontSize: pt(parseFloat(cs.fontSize)), color: (hexOf(cs.color) || { hex: 'F0F4F8' }).hex, bold: w >= 600, italic: cs.fontStyle === 'italic', charSpacing: pt(parseFloat(cs.letterSpacing) || 0), upper: cs.textTransform === 'uppercase' }; };
         const runsOf = (el, out) => { el.childNodes.forEach(n => { if (n.nodeType === 3) { const t = n.textContent.replace(/\s+/g, ' '); if (t) { const s = styleOf(el); out.push({ text: s.upper ? t.toUpperCase() : t, options: { fontFace: s.fontFace, fontSize: s.fontSize, color: s.color, bold: s.bold, italic: s.italic, charSpacing: s.charSpacing } }); } } else if (n.nodeType === 1) { if (n.tagName === 'BR') out.push({ text: ' ', options: { breakLine: true } }); else if (isInline(n)) runsOf(n, out); } }); return out; };
+        const addLines = (el, slide, cr) => {
+          const cs = getComputedStyle(el), r = el.getBoundingClientRect(), ps = [];
+          const rec = p => { const s = styleOf(p), o = { fontFace: s.fontFace, fontSize: s.fontSize, color: s.color, bold: s.bold, italic: s.italic, charSpacing: s.charSpacing };
+            p.childNodes.forEach(n => {
+              if (n.nodeType === 3) { const raw = n.textContent, re = /\S+|\s+/g; let m;
+                while ((m = re.exec(raw))) { const tok = m[0];
+                  if (!/\S/.test(tok)) { ps.push({ sp: true, o }); continue; }
+                  const rg = d.createRange(); rg.setStart(n, m.index); rg.setEnd(n, m.index + tok.length); const rc = rg.getBoundingClientRect();
+                  ps.push({ t: s.upper ? tok.toUpperCase() : tok, o, top: rc.top, h: rc.height }); } }
+              else if (n.nodeType === 1) { if (n.tagName === 'BR') ps.push({ br: true }); else if (isInline(n)) rec(n); } }); };
+          rec(el);
+          if (!ps.some(p => p.t)) return true;
+          const runs = [], same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+          const push = (text, o) => { const L = runs[runs.length - 1]; if (L && !L.options.breakLine && same(L.options, o)) L.text += text; else runs.push({ text, options: Object.assign({}, o) }); };
+          const brk = () => { const L = runs[runs.length - 1]; if (L) L.options.breakLine = true; };
+          let lastTop = null, lastH = 0, pend = null;
+          ps.forEach(p => {
+            if (p.br) { pend = null; brk(); lastTop = null; return; }
+            if (p.sp) { pend = p; return; }
+            const newLine = lastTop !== null && Math.abs(p.top - lastTop) > 0.5 * Math.min(p.h, lastH);
+            if (newLine) { pend = null; brk(); }
+            else if (pend && runs.length) push(' ', pend.o);
+            pend = null; push(p.t, p.o); lastTop = p.top; lastH = p.h;
+          });
+          const L = runs[runs.length - 1]; if (L) delete L.options.breakLine;
+          const align = { center: 'center', right: 'right', end: 'right', justify: 'justify' }[cs.textAlign] || 'left';
+          const ls = cs.lineHeight && cs.lineHeight !== 'normal' ? pt(parseFloat(cs.lineHeight)) : undefined;
+          const extra = inch(r.width) * 0.04 + 0.06, shift = align === 'center' ? extra / 2 : align === 'right' ? extra : 0;
+          slide.addText(runs, { x: inch(r.left - cr.left) - shift, y: inch(r.top - cr.top), w: inch(r.width) + extra, h: inch(r.height), margin: 0, align, valign: 'top', wrap: false, lineSpacing: ls, paraSpaceBefore: 0, paraSpaceAfter: 0 });
+          return true;
+        };
         const addText = (el, slide, cr) => {
+          if (addLines(el, slide, cr)) return;
           const cs = getComputedStyle(el), r = el.getBoundingClientRect();
           let runs = runsOf(el, []); if (!runs.length) return;
           runs[0].text = runs[0].text.replace(/^\s+/, ''); const L = runs[runs.length - 1]; L.text = L.text.replace(/\s+$/, '');
           runs = runs.filter(u => u.text || u.options.breakLine); if (!runs.length) return;
           const align = { center: 'center', right: 'right', end: 'right', justify: 'justify' }[cs.textAlign] || 'left';
           const ls = cs.lineHeight && cs.lineHeight !== 'normal' ? pt(parseFloat(cs.lineHeight)) : undefined;
-          slide.addText(runs, { x: inch(r.left - cr.left), y: inch(r.top - cr.top), w: inch(r.width) + (align === 'left' ? 0.03 : 0), h: inch(r.height), margin: 0, align, valign: 'top', wrap: true, lineSpacing: ls, paraSpaceBefore: 0, paraSpaceAfter: 0 });
+          const extra = inch(r.width) * 0.04 + 0.06, lh = parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.2, one = r.height < lh * 1.5, shift = align === 'center' ? extra / 2 : align === 'right' ? extra : 0; slide.addText(runs, { x: inch(r.left - cr.left) - shift, y: inch(r.top - cr.top), w: inch(r.width) + extra, h: inch(r.height), margin: 0, align, valign: 'top', wrap: !one, lineSpacing: ls, paraSpaceBefore: 0, paraSpaceAfter: 0 });
         };
         const toImg = (el, r, cs) => { if (!el.naturalWidth) return null; const c = d.createElement('canvas'); c.width = Math.max(1, Math.round(r.width * 2)); c.height = Math.max(1, Math.round(r.height * 2)); const g = c.getContext('2d'), sw = el.naturalWidth, sh = el.naturalHeight; if (cs.objectFit === 'cover') { const k = Math.max(r.width / sw, r.height / sh), dw = r.width / k, dh = r.height / k; g.drawImage(el, (sw - dw) / 2, (sh - dh) / 2, dw, dh, 0, 0, c.width, c.height); } else g.drawImage(el, 0, 0, sw, sh, 0, 0, c.width, c.height); try { return c.toDataURL('image/png'); } catch (e) { return null; } };
         const rect = (slide, b, color, a) => slide.addShape('rect', { x: b[0], y: b[1], w: b[2], h: b[3], fill: { color, transparency: Math.round((1 - a) * 100) }, line: { type: 'none' } });
@@ -525,7 +559,8 @@ class Component extends DCLogic {
           if (isIcon(el)) return;
           const bg = hexOf(cs.backgroundColor); if (bg && bg.a > 0.01) rect(slide, [x, y, w, h], bg.hex, bg.a);
           ['Top', 'Right', 'Bottom', 'Left'].forEach(side => { const bw = parseFloat(cs['border' + side + 'Width']), bc = hexOf(cs['border' + side + 'Color']); if (!(bw > 0) || cs['border' + side + 'Style'] === 'none' || !bc || bc.a < 0.01) return; const t = inch(Math.max(bw, 1)); const b = side === 'Top' ? [x, y, w, t] : side === 'Bottom' ? [x, y + h - t, w, t] : side === 'Left' ? [x, y, t, h] : [x + w - t, y, t, h]; rect(slide, b, bc.hex, bc.a); });
-          if (hasText(el) && [...el.children].every(isInline)) { addText(el, slide, cr); return; }
+          if ([...el.children].every(isInline) && el.textContent.trim() && !['flex', 'inline-flex', 'grid', 'inline-grid'].includes(cs.display)) { addText(el, slide, cr); return; }
+          if (hasText(el)) { const s = styleOf(el); el.childNodes.forEach(n => { if (n.nodeType === 3) { const t = n.textContent.replace(/\s+/g, ' ').trim(); if (!t) return; const rg = d.createRange(); rg.selectNodeContents(n); const r = rg.getBoundingClientRect(); if (r.width < 1) return; slide.addText([{ text: s.upper ? t.toUpperCase() : t, options: { fontFace: s.fontFace, fontSize: s.fontSize, color: s.color, bold: s.bold, italic: s.italic, charSpacing: s.charSpacing } }], { x: inch(r.left - cr.left), y: inch(r.top - cr.top), w: inch(r.width) + 0.05, h: inch(r.height), margin: 0, valign: 'top', wrap: false, lineSpacing: parseFloat(cs.lineHeight) > 0 ? pt(parseFloat(cs.lineHeight)) : undefined, paraSpaceBefore: 0, paraSpaceAfter: 0 }); } else if (n.nodeType === 1) walk(n, slide, cr); }); return; }
           [...el.children].forEach(c => walk(c, slide, cr));
         };
         const host = d.createElement('div'); host.style.cssText = 'position:fixed;left:-30000px;top:0;width:1920px;height:1080px;overflow:hidden'; d.body.appendChild(host);
